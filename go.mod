@@ -4,7 +4,7 @@ go 1.23.0
 
 require (
 	fyne.io/fyne/v2 v2.5.4
-	github.com/seb-ehm/panasonic-comfort-cloud v0.0.0-20250217113416-8f7f6d9c88b4
+	github.com/seb-ehm/panasonic-comfort-cloud v0.0.0-20250217140351-58edbb92face
 )
 
 require (
