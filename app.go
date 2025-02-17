@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"github.com/seb-ehm/panasonic-comfort-cloud/comfortcloud"
 )
@@ -8,10 +9,17 @@ import (
 func RunApp() {
 	a := app.New()
 	w := a.NewWindow("AC Controller")
-	var client *comfortcloud.Client
-	// Set the initial content to the login screen
+	// Set a minimum window size
+	w.Resize(fyne.NewSize(800, 600))
 
-	w.SetContent(createLoginScreen(client, w))
+	client := comfortcloud.NewClient("", "", tokenFile)
+
+	client, needsLogin := NeedsLogin(client)
+	if needsLogin {
+		w.SetContent(createLoginScreen(client, w))
+	} else {
+		w.SetContent(createOverviewScreen(client, w))
+	}
 
 	// Start control loops in the background
 	go StartControlLoops()

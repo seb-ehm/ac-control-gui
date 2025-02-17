@@ -1,44 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/seb-ehm/panasonic-comfort-cloud/comfortcloud"
-	"os"
 )
 
-func checkConfigFile() bool {
-	// Check if the config file exists and meets preconditions
-	_, err := os.Stat("config.json")
-	return os.IsNotExist(err)
-}
-
-func NeedsLogin() bool {
-	return true
+func NeedsLogin(client *comfortcloud.Client) (*comfortcloud.Client, bool) {
+	//Check if token file can be used instead of username / password
+	err := client.Login()
+	if err == nil {
+		return client, false
+	}
+	return nil, true
+	//return client, false
 }
 
 func createLoginScreen(client *comfortcloud.Client, window fyne.Window) fyne.CanvasObject {
+
 	username := widget.NewEntry()
 	password := widget.NewPasswordEntry()
 
+	// Create login form
 	form := &widget.Form{
 		Items: []*widget.FormItem{
 			{Text: "Username", Widget: username},
 			{Text: "Password", Widget: password},
 		},
 		OnSubmit: func() {
-			// Simulate login logic
-			if username.Text == "admin" && password.Text == "password" {
-				// Switch to the overview screen
-				window.SetContent(createOverviewScreen(client, window))
+			client = comfortcloud.NewClient(username.Text, password.Text, tokenFile)
+			err := client.Login()
+			if err != nil {
+				dialog.ShowError(err, window)
 			} else {
-				dialog.ShowError(fmt.Errorf("invalid credentials"), window)
+				window.SetContent(createOverviewScreen(client, window))
 			}
 		},
 	}
 
-	return container.NewVBox(form)
+	// Wrap the form in a fixed-size container
+	formContainer := container.NewGridWrap(fyne.NewSize(300, form.MinSize().Height), form)
+
+	// Center the form
+	centeredForm := container.NewCenter(formContainer)
+
+	return centeredForm
 }
